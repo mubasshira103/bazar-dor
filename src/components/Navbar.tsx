@@ -2,10 +2,19 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { authClient } from '@/lib/auth-client';
-import { categories, products, formatBengaliNumber } from '@/lib/products';
-import { ShoppingBasket, UserRound, LogOut, ChevronDown } from 'lucide-react';
+import {
+  categories,
+  products,
+  formatBengaliNumber,
+} from '@/lib/products';
+import {
+  ShoppingBasket,
+  UserRound,
+  LogOut,
+  ChevronDown,
+} from 'lucide-react';
 import Image from 'next/image';
 
 export default function Navbar() {
@@ -15,25 +24,16 @@ export default function Navbar() {
   const { data: session, isPending } = authClient.useSession();
 
   const [menuOpen, setMenuOpen] = useState(false);
-  const [today, setToday] = useState('');
+
+  const today = new Intl.DateTimeFormat('bn-BD', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(new Date());
 
   const ticker = [...products, ...products];
   const user = session?.user;
-
-  useEffect(() => {
-    const date = new Intl.DateTimeFormat('bn-BD', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    }).format(new Date());
-
-    setToday(date);
-  }, []);
-
-  useEffect(() => {
-    setMenuOpen(false);
-  }, [pathname]);
 
   const handleLogout = async () => {
     try {
@@ -46,7 +46,7 @@ export default function Navbar() {
       setMenuOpen(false);
       router.push('/');
       router.refresh();
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Logout failed:', error);
     }
   };
@@ -54,25 +54,37 @@ export default function Navbar() {
   return (
     <header className="site-header">
       <div className="topbar container">
-        <Link href="/" className="brand">
+        <Link
+          href="/"
+          className="brand"
+          onClick={() => setMenuOpen(false)}
+        >
           <span className="brand-icon">
             <ShoppingBasket size={24} />
           </span>
 
           <span>
             <b>বাজার দর</b>
-            <small>{today || 'তারিখ লোড হচ্ছে...'}</small>
+            <small>{today}</small>
           </span>
         </Link>
 
         <div className="auth-actions">
           {!isPending && !user && (
             <>
-              <Link className="signin-link" href="/signin">
+              <Link
+                className="signin-link"
+                href="/signin"
+                onClick={() => setMenuOpen(false)}
+              >
                 সাইন ইন
               </Link>
 
-              <Link className="btn btn-primary btn-small" href="/signup">
+              <Link
+                className="btn btn-primary btn-small"
+                href="/signup"
+                onClick={() => setMenuOpen(false)}
+              >
                 সাইন আপ
               </Link>
             </>
@@ -89,8 +101,8 @@ export default function Navbar() {
               >
                 {user.image ? (
                   <Image
-                  width={40}
-                  height={40}
+                    width={40}
+                    height={40}
                     src={user.image}
                     alt={user.name || 'User avatar'}
                     className="h-10 w-10 rounded-full object-cover"
@@ -146,8 +158,11 @@ export default function Navbar() {
       <nav className="category-nav">
         <div className="container nav-links">
           <Link
-            className={pathname === '/' ? 'nav-link active' : 'nav-link'}
+            className={
+              pathname === '/' ? 'nav-link active' : 'nav-link'
+            }
             href="/"
+            onClick={() => setMenuOpen(false)}
           >
             ⌂ <span>হোম</span>
           </Link>
@@ -161,6 +176,7 @@ export default function Navbar() {
                   : 'nav-link'
               }
               href={`/category/${c.slug}`}
+              onClick={() => setMenuOpen(false)}
             >
               {c.emoji} <span>{c.name}</span>
             </Link>
@@ -171,7 +187,10 @@ export default function Navbar() {
       <div className="ticker">
         <div className="ticker-track">
           {ticker.map((p, i) => (
-            <span className="ticker-item" key={`${p.slug}-${i}`}>
+            <span
+              className="ticker-item"
+              key={`${p.slug}-${i}`}
+            >
               {p.emoji} {p.name}{' '}
               <b>
                 {formatBengaliNumber(p.price)} টাকা/
@@ -179,10 +198,18 @@ export default function Navbar() {
               </b>{' '}
               <i
                 className={
-                  p.change > 0 ? 'up' : p.change < 0 ? 'down' : 'flat'
+                  p.change > 0
+                    ? 'up'
+                    : p.change < 0
+                      ? 'down'
+                      : 'flat'
                 }
               >
-                {p.change > 0 ? '▲' : p.change < 0 ? '▼' : '—'}{' '}
+                {p.change > 0
+                  ? '▲'
+                  : p.change < 0
+                    ? '▼'
+                    : '—'}{' '}
                 {formatBengaliNumber(Math.abs(p.change))}%
               </i>
             </span>

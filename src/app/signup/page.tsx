@@ -65,7 +65,7 @@ export default function SignUpPage() {
         callbackURL: '/',
       });
 
-      if (error) toast.error(error.message);
+      if (error) toast.error(error.message || 'Google Authentication ব্যর্থ হয়েছে');
     } catch {
       toast.error('Google Authentication ব্যর্থ হয়েছে');
     }
@@ -78,7 +78,7 @@ export default function SignUpPage() {
         callbackURL: '/',
       });
 
-      if (error) toast.error(error.message);
+      if (error) toast.error(error.message || 'GitHub Authentication ব্যর্থ হয়েছে');
     } catch {
       toast.error('GitHub Authentication ব্যর্থ হয়েছে');
     }
