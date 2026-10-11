@@ -5,7 +5,7 @@ import { ArrowDown } from 'lucide-react';
 
 export default function Hero() {
   return (
-    <section className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 overflow-hidden rounded-3xl bg-orange-50 px-6 py-12 sm:px-10 md:grid-cols-2 md:px-14 md:py-16">
+    <section className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 overflow-hidden rounded-3xl bg-white px-6 py-12 sm:px-10 md:grid-cols-2 md:px-14 md:py-16">
       {/* Left Side - Content */}
       <div className="space-y-6">
         <span className="inline-block rounded-full bg-green-100 px-4 py-2 text-sm font-semibold text-green-700">
