@@ -52,7 +52,7 @@ function ProfileForm({ user }: ProfileFormProps) {
     const trimmedImage = image.trim();
 
     if (!trimmedName) {
-      toast.error("Please enter your name.");
+      toast.error("অনুগ্রহ করে আপনার নাম লিখুন।");
       return;
     }
 
@@ -61,11 +61,11 @@ function ProfileForm({ user }: ProfileFormProps) {
         const parsedUrl = new URL(trimmedImage);
 
         if (!["http:", "https:"].includes(parsedUrl.protocol)) {
-          toast.error("Please enter a valid image URL.");
+          toast.error("অনুগ্রহ করে একটি সঠিক ছবির URL দিন।");
           return;
         }
       } catch {
-        toast.error("Please enter a valid image URL.");
+        toast.error("অনুগ্রহ করে একটি সঠিক ছবির URL দিন।");
         return;
       }
     }
@@ -79,16 +79,16 @@ function ProfileForm({ user }: ProfileFormProps) {
       });
 
       if (result.error) {
-        toast.error(result.error.message || "Failed to update profile.");
+        toast.error(result.error.message || "প্রোফাইল আপডেট করা যায়নি।");
         return;
       }
 
-      toast.success("Profile updated successfully!");
+      toast.success("প্রোফাইল সফলভাবে আপডেট হয়েছে!");
       router.push("/profile");
       router.refresh();
     } catch (error) {
       console.error("Profile update failed:", error);
-      toast.error("Something went wrong. Please try again.");
+      toast.error("কোনো সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।");
     } finally {
       setSaving(false);
     }
@@ -102,15 +102,15 @@ function ProfileForm({ user }: ProfileFormProps) {
           className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-gray-600 transition hover:text-green-700"
         >
           <ArrowLeft size={18} />
-          Back to Profile
+          প্রোফাইলে ফিরে যান
         </Link>
 
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">
-            Update Profile
+            প্রোফাইল আপডেট করুন
           </h1>
           <p className="mt-2 text-sm text-gray-500">
-            Update your account information.
+            আপনার অ্যাকাউন্টের তথ্য আপডেট করুন।
           </p>
         </div>
 
@@ -119,10 +119,10 @@ function ProfileForm({ user }: ProfileFormProps) {
             <div className="flex flex-col items-center gap-3 border-b border-gray-100 pb-6">
               {image.trim() ? (
                 <Image
-                width={65}
-                height={65}
+                  width={65}
+                  height={65}
                   src={image.trim()}
-                  alt="Profile preview"
+                  alt="প্রোফাইল ছবির প্রিভিউ"
                   className="h-24 w-24 rounded-full border-4 border-gray-100 object-cover"
                   onError={(event) => {
                     event.currentTarget.style.visibility = "hidden";
@@ -135,7 +135,7 @@ function ProfileForm({ user }: ProfileFormProps) {
               )}
 
               <p className="text-sm text-gray-500">
-                Profile picture preview
+                প্রোফাইল ছবির প্রিভিউ
               </p>
             </div>
 
@@ -144,7 +144,7 @@ function ProfileForm({ user }: ProfileFormProps) {
                 htmlFor="name"
                 className="mb-2 block text-sm font-medium text-gray-700"
               >
-                Full Name <span className="text-red-500">*</span>
+                পুরো নাম <span className="text-red-500">*</span>
               </label>
               <input
                 id="name"
@@ -152,7 +152,7 @@ function ProfileForm({ user }: ProfileFormProps) {
                 type="text"
                 value={name}
                 onChange={(event) => setName(event.target.value)}
-                placeholder="Enter your full name"
+                placeholder="আপনার পুরো নাম লিখুন"
                 autoComplete="name"
                 maxLength={100}
                 required
@@ -160,13 +160,12 @@ function ProfileForm({ user }: ProfileFormProps) {
               />
             </div>
 
-
             <div>
               <label
                 htmlFor="image"
                 className="mb-2 block text-sm font-medium text-gray-700"
               >
-                Profile Image URL
+                প্রোফাইল ছবির URL
               </label>
               <input
                 id="image"
@@ -178,8 +177,8 @@ function ProfileForm({ user }: ProfileFormProps) {
                 className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none transition focus:border-green-600 focus:ring-2 focus:ring-green-100"
               />
               <p className="mt-2 text-xs text-gray-500">
-                Enter a publicly accessible image URL. Leave empty to
-                remove your profile picture.
+                সবার দেখার উপযোগী একটি ছবির URL দিন। প্রোফাইল ছবি
+                সরিয়ে ফেলতে চাইলে ঘরটি খালি রাখুন।
               </p>
             </div>
 
@@ -188,7 +187,7 @@ function ProfileForm({ user }: ProfileFormProps) {
                 href="/profile"
                 className="inline-flex items-center justify-center rounded-lg border border-gray-300 px-5 py-3 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
               >
-                Cancel
+                বাতিল করুন
               </Link>
 
               <button
@@ -199,12 +198,12 @@ function ProfileForm({ user }: ProfileFormProps) {
                 {saving ? (
                   <>
                     <LoaderCircle size={18} className="animate-spin" />
-                    Saving...
+                    সংরক্ষণ হচ্ছে...
                   </>
                 ) : (
                   <>
                     <Save size={18} />
-                    Save Changes
+                    পরিবর্তন সংরক্ষণ করুন
                   </>
                 )}
               </button>
