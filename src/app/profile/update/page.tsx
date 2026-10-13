@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
@@ -6,7 +7,26 @@ import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { ArrowLeft, Save, LoaderCircle, UserRound } from "lucide-react";
 import toast from "react-hot-toast";
-import Image from "next/image";
+
+type ProfileFormProps = {
+  user: {
+    id: string;
+    name: string;
+    image?: string | null;
+    email: string;
+  };
+};
+
+// ছবির URL সঠিক কি না যাচাই করবে
+function isValidImageUrl(value: string): boolean {
+  try {
+    const url = new URL(value);
+
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
 
 export default function UpdateProfilePage() {
   const router = useRouter();
@@ -29,15 +49,6 @@ export default function UpdateProfilePage() {
   return <ProfileForm key={session.user.id} user={session.user} />;
 }
 
-type ProfileFormProps = {
-  user: {
-    id: string;
-    name: string;
-    image?: string | null;
-    email: string;
-  };
-};
-
 function ProfileForm({ user }: ProfileFormProps) {
   const router = useRouter();
 
@@ -45,29 +56,28 @@ function ProfileForm({ user }: ProfileFormProps) {
   const [image, setImage] = useState(user.image ?? "");
   const [saving, setSaving] = useState(false);
 
+  const trimmedImage = image.trim();
+  const showImage = isValidImageUrl(trimmedImage);
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const trimmedName = name.trim();
-    const trimmedImage = image.trim();
+    const finalImage = image.trim();
 
     if (!trimmedName) {
       toast.error("অনুগ্রহ করে আপনার নাম লিখুন।");
       return;
     }
 
-    if (trimmedImage) {
-      try {
-        const parsedUrl = new URL(trimmedImage);
+    if (trimmedName.length > 100) {
+      toast.error("নাম সর্বোচ্চ ১০০ অক্ষরের হতে পারবে।");
+      return;
+    }
 
-        if (!["http:", "https:"].includes(parsedUrl.protocol)) {
-          toast.error("অনুগ্রহ করে একটি সঠিক ছবির URL দিন।");
-          return;
-        }
-      } catch {
-        toast.error("অনুগ্রহ করে একটি সঠিক ছবির URL দিন।");
-        return;
-      }
+    if (finalImage && !isValidImageUrl(finalImage)) {
+      toast.error("অনুগ্রহ করে একটি সঠিক ছবির URL দিন।");
+      return;
     }
 
     setSaving(true);
@@ -75,7 +85,7 @@ function ProfileForm({ user }: ProfileFormProps) {
     try {
       const result = await authClient.updateUser({
         name: trimmedName,
-        image: trimmedImage || null,
+        image: finalImage || null,
       });
 
       if (result.error) {
@@ -84,6 +94,7 @@ function ProfileForm({ user }: ProfileFormProps) {
       }
 
       toast.success("প্রোফাইল সফলভাবে আপডেট হয়েছে!");
+
       router.push("/profile");
       router.refresh();
     } catch (error) {
@@ -109,6 +120,7 @@ function ProfileForm({ user }: ProfileFormProps) {
           <h1 className="text-3xl font-bold text-gray-900">
             প্রোফাইল আপডেট করুন
           </h1>
+
           <p className="mt-2 text-sm text-gray-500">
             আপনার অ্যাকাউন্টের তথ্য আপডেট করুন।
           </p>
@@ -116,16 +128,18 @@ function ProfileForm({ user }: ProfileFormProps) {
 
         <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Profile image preview */}
             <div className="flex flex-col items-center gap-3 border-b border-gray-100 pb-6">
-              {image.trim() ? (
-                <Image
-                  width={65}
-                  height={65}
-                  src={image.trim()}
+              {showImage ? (
+                <img
+                  key={trimmedImage}
+                  src={trimmedImage}
                   alt="প্রোফাইল ছবির প্রিভিউ"
+                  width={96}
+                  height={96}
                   className="h-24 w-24 rounded-full border-4 border-gray-100 object-cover"
                   onError={(event) => {
-                    event.currentTarget.style.visibility = "hidden";
+                    event.currentTarget.style.display = "none";
                   }}
                 />
               ) : (
@@ -139,6 +153,7 @@ function ProfileForm({ user }: ProfileFormProps) {
               </p>
             </div>
 
+            {/* Name input */}
             <div>
               <label
                 htmlFor="name"
@@ -146,6 +161,7 @@ function ProfileForm({ user }: ProfileFormProps) {
               >
                 পুরো নাম <span className="text-red-500">*</span>
               </label>
+
               <input
                 id="name"
                 name="name"
@@ -160,6 +176,7 @@ function ProfileForm({ user }: ProfileFormProps) {
               />
             </div>
 
+            {/* Image URL input */}
             <div>
               <label
                 htmlFor="image"
@@ -167,21 +184,31 @@ function ProfileForm({ user }: ProfileFormProps) {
               >
                 প্রোফাইল ছবির URL
               </label>
+
               <input
                 id="image"
                 name="image"
-                type="url"
+                type="text"
                 value={image}
                 onChange={(event) => setImage(event.target.value)}
                 placeholder="https://example.com/profile.jpg"
+                autoComplete="url"
                 className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none transition focus:border-green-600 focus:ring-2 focus:ring-green-100"
               />
+
               <p className="mt-2 text-xs text-gray-500">
                 সবার দেখার উপযোগী একটি ছবির URL দিন। প্রোফাইল ছবি
                 সরিয়ে ফেলতে চাইলে ঘরটি খালি রাখুন।
               </p>
+
+              {trimmedImage && !showImage && (
+                <p className="mt-2 text-sm text-red-500">
+                  অনুগ্রহ করে একটি সঠিক HTTP বা HTTPS URL দিন।
+                </p>
+              )}
             </div>
 
+            {/* Action buttons */}
             <div className="flex flex-col-reverse gap-3 border-t border-gray-100 pt-6 sm:flex-row sm:justify-end">
               <Link
                 href="/profile"

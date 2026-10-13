@@ -12,6 +12,17 @@ export type Product = {
   minPrice: number;
   maxPrice: number;
   averagePrice: number;
-  markets: { name: string; district: string; min: number; max: number; price: number }[];
+  markets: {
+    name: string;
+    district: string;
+    min: number;
+    max: number;
+    price: number;
+  }[];
 };
-export type Category = { slug: string; name: string; emoji: string };
+
+export type Category = {
+  slug: string;
+  name: string;
+  emoji: string;
+};

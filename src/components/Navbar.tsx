@@ -1,21 +1,35 @@
+
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { authClient } from '@/lib/auth-client';
-import {
-  categories,
-  products,
-  formatBengaliNumber,
-} from '@/lib/products';
+import { getCategories, getProducts } from '@/lib/api';
 import {
   ShoppingBasket,
   UserRound,
   LogOut,
   ChevronDown,
 } from 'lucide-react';
-import Image from 'next/image';
+import toast from 'react-hot-toast';
+
+type Category = {
+  slug: string;
+  name: string;
+  emoji: string;
+};
+
+type Product = {
+  id?: string | number;
+  slug: string;
+  name: string;
+  emoji: string;
+  price: number;
+  unit: string;
+  change: number;
+};
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -24,6 +38,34 @@ export default function Navbar() {
   const { data: session, isPending } = authClient.useSession();
 
   const [menuOpen, setMenuOpen] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadData() {
+      try {
+        const [categoryData, productData] = await Promise.all([
+          getCategories(),
+          getProducts(),
+        ]);
+
+        if (isMounted) {
+          setCategories(categoryData);
+          setProducts(productData);
+        }
+      } catch (error: unknown) {
+        console.error('Failed to load navbar data:', error);
+      }
+    }
+
+    loadData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const today = new Intl.DateTimeFormat('bn-BD', {
     weekday: 'long',
@@ -35,19 +77,26 @@ export default function Navbar() {
   const ticker = [...products, ...products];
   const user = session?.user;
 
+  const formatBengaliNumber = (value: number) =>
+    new Intl.NumberFormat('bn-BD').format(value);
+
   const handleLogout = async () => {
     try {
       const { error } = await authClient.signOut();
 
       if (error) {
+        toast.error('লগআউট করা যায়নি!');
         return;
       }
 
       setMenuOpen(false);
+      toast.success('সাইন আউট সফল হয়েছে');
+
       router.push('/');
       router.refresh();
     } catch (error: unknown) {
       console.error('Logout failed:', error);
+      toast.error('লগআউট করার সময় সমস্যা হয়েছে!');
     }
   };
 
@@ -158,27 +207,25 @@ export default function Navbar() {
       <nav className="category-nav">
         <div className="container nav-links">
           <Link
-            className={
-              pathname === '/' ? 'nav-link active' : 'nav-link'
-            }
+            className={pathname === '/' ? 'nav-link active' : 'nav-link'}
             href="/"
             onClick={() => setMenuOpen(false)}
           >
             ⌂ <span>হোম</span>
           </Link>
 
-          {categories.map((c) => (
+          {categories.map((category) => (
             <Link
-              key={c.slug}
+              key={category.slug}
               className={
-                pathname === `/category/${c.slug}`
+                pathname === `/category/${category.slug}`
                   ? 'nav-link active'
                   : 'nav-link'
               }
-              href={`/category/${c.slug}`}
+              href={`/category/${category.slug}`}
               onClick={() => setMenuOpen(false)}
             >
-              {c.emoji} <span>{c.name}</span>
+              {category.emoji} <span>{category.name}</span>
             </Link>
           ))}
         </div>
@@ -186,31 +233,31 @@ export default function Navbar() {
 
       <div className="ticker">
         <div className="ticker-track">
-          {ticker.map((p, i) => (
+          {ticker.map((product, index) => (
             <span
               className="ticker-item"
-              key={`${p.slug}-${i}`}
+              key={`${product.slug}-${index}`}
             >
-              {p.emoji} {p.name}{' '}
+              {product.emoji} {product.name}{' '}
               <b>
-                {formatBengaliNumber(p.price)} টাকা/
-                {p.unit.replace('প্রতি ', '')}
+                {formatBengaliNumber(product.price)} টাকা/
+                {product.unit.replace('প্রতি ', '')}
               </b>{' '}
               <i
                 className={
-                  p.change > 0
+                  product.change > 0
                     ? 'up'
-                    : p.change < 0
+                    : product.change < 0
                       ? 'down'
                       : 'flat'
                 }
               >
-                {p.change > 0
+                {product.change > 0
                   ? '▲'
-                  : p.change < 0
+                  : product.change < 0
                     ? '▼'
                     : '—'}{' '}
-                {formatBengaliNumber(Math.abs(p.change))}%
+                {formatBengaliNumber(Math.abs(product.change))}%
               </i>
             </span>
           ))}
@@ -219,3 +266,4 @@ export default function Navbar() {
     </header>
   );
 }
+
